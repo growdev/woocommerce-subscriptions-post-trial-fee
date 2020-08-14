@@ -1,13 +1,12 @@
 <?php
 /**
- * Plugin Name:  GrowDev Custom WC
- * Plugin URI:   https://growdevelopment.com/
- * Description:  Custom WooCommerce plugin for demo
+ * Plugin Name:  WooCommerce Subscriptions Post Trial Fee
+ * Plugin URI:   https://github.com/growdev/woocommerce-subscriptions-post-trial-fee
+ * Description:  Add ability to charge fee after subscription free trial.
  * Version:      0.1
  * Author:       Grow Development
  * Author URI:   https://growdevelopment.com/
 */
-
 
 
 add_action( 'init', 'gdcwc_init' );
@@ -61,7 +60,7 @@ function gdcwc_save_subscription_meta( $post_id ) {
 
 	// TODO: add nonce
 	//if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) ) {
-		//return;
+	//return;
 	//}
 	if ( isset( $_REQUEST['_subscription_post_trial_fee'] ) ) {
 		update_post_meta( $post_id, '_subscription_post_trial_fee', $_REQUEST['_subscription_post_trial_fee'] );
@@ -70,3 +69,4 @@ function gdcwc_save_subscription_meta( $post_id ) {
 	//	update_post_meta( $post_id, '_variable_subscription_schedule_id', $_REQUEST['_variable_subscription_schedule_id'] );
 	//}
 }
+
