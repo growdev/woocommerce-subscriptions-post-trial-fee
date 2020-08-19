@@ -120,8 +120,9 @@ function gdcwc_maybe_add_fee( $new_order, $subscription, $type ) {
 	$items = $subscription->get_items();
 
 	foreach ( $items as $item ) {
-		$product_id     = $item->get_product_id();
-		$post_trial_fee = get_post_meta( $product_id, '_subscription_post_trial_fee', true );
+		// Check subscription for meta
+		$post_trial_fee = get_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', true );
+
 		if ( '' !== $post_trial_fee ) {
 			// Create a Fee Object
 			$fee           = new StdClass();
