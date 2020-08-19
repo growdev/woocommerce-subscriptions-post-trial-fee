@@ -124,17 +124,16 @@ function gdcwc_maybe_add_fee( $new_order, $subscription, $type ) {
 		$post_trial_fee = get_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', true );
 
 		if ( '' !== $post_trial_fee ) {
-			// Create a Fee Object
-			$fee           = new StdClass();
-			$fee->name     = __( 'Post Trial Fee', 'wc-subs-post-trial-fee' );
-			$fee->amount   = $post_trial_fee;
-			$fee->taxable  = false;
-			$fee->tax      = '';
-			$fee->tax_data = '';
 
 			// add fee to order and recalculate
 			try {
-				$new_order->add_fee( $fee ); // TODO remove deprecated method
+				$fee = new WC_Order_Item_Fee();
+				$fee->set_amount( $post_trial_fee );
+				$fee->set_total( $post_trial_fee );
+				$fee->set_name( __( 'Post Trial Fee', 'wc-subs-post-trial-fee' ) );
+				$fee->save();
+
+				$new_order->add_item( $fee );
 				$new_order->save();
 				$new_order->calculate_totals();
 			} catch ( Exception $e ) {
