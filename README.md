@@ -1,5 +1,14 @@
-# growdev-custom-wc
-Demo WooCommerce plugin for twitch stream 
+# WooCommerce Subscriptions - Post Trial Fee
+
+## Background
+This started as a demo WooCommerce plugin for twitch stream. Then it moved on to be a feature plugin for WooCommerce and WooCommerce Subscriptions. 
+
+
+## Description
+
+WC Subscriptions has a Sign-Up fee that is a one time fee, but it is not possible to charge this after the parent order.
+This plugin adds a "Post Trial Fee" to Simple and Variable subscriptions. The fee is added to the first renewal after a Free trial.
+ 
 
 
 ## Goal 1
