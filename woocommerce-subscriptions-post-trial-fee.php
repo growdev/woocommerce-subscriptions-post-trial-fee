@@ -129,16 +129,26 @@ function gdcwc_woocommerce_checkout_subscription_created( $subscription, $order,
 
 	// TODO: figure out if multiple products have post trial fee.
 	foreach ( $items as $item ) {
-		// Check Simple Subscriptions
-		$product_id     = $item->get_product_id();
-		// If Variable Subscripion
-		// check variations
+		$product_id = $item->get_product_id();
+		$product    = wc_get_product( $product_id );
 
-		// else it is simple subscription
-		$post_trial_fee = get_post_meta( $product_id, '_subscription_post_trial_fee', true );
-		if ( '' !== $post_trial_fee ) {
-			// add to subscription
-			update_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', $post_trial_fee );
+		if ( 'subscription' === $product->get_type() ) {
+			// Simple Subscriptions
+			$post_trial_fee = get_post_meta( $product->get_id(), '_subscription_post_trial_fee', true );
+			if ( '' !== $post_trial_fee ) {
+				// add to subscription
+				update_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', $post_trial_fee );
+			}
+		} elseif ( 'variable-subscription' === $product->get_type() ) {
+			// Variable Subscripion
+			$variable_post_trial_fee = get_post_meta( $product_id, '_variable_subscription_post_trial_fee', true );
+			if ( is_array( $variable_post_trial_fee ) ) {
+				// get variation_id from order
+				if ( isset( $variable_post_trial_fee[ $item->get_variation_id() ] ) ) {
+					// add to subscription
+					update_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', $variable_post_trial_fee[ $item->get_variation_id() ] );
+				}
+			}
 		}
 	}
 }
