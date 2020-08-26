@@ -66,7 +66,7 @@ function gdcwc_woocommerce_subscriptions_product_options_pricing() {
  *
  * @param $loop
  * @param $variation_data
- * @param $variation
+ * @param $variation WP_Post
  */
 function gdcwc_woocommerce_variation_options( $loop, $variation_data, $variation ) {
 	global $post;
@@ -75,8 +75,8 @@ function gdcwc_woocommerce_variation_options( $loop, $variation_data, $variation
 	// Sign-up Fee
 	woocommerce_wp_text_input(
 		array(
-			'id'                => '_variable_subscription_post_trial_fee' . $loop,
-			'name'              => '_variable_subscription_post_trial_fee[' . $loop . ']',
+			'id'                => '_variable_subscription_post_trial_fee' . $variation->ID,
+			'name'              => '_variable_subscription_post_trial_fee[' . $variation->ID . ']',
 			// Keep wc_input_subscription_intial_price for backward compatibility.
 			'class'             => 'wc_input_subscription_intial_price wc_input_subscription_initial_price wc_input_price  short',
 			// translators: %s is a currency symbol / code
@@ -86,7 +86,7 @@ function gdcwc_woocommerce_variation_options( $loop, $variation_data, $variation
 			'desc_tip'          => true,
 			'type'              => 'text',
 			'data_type'         => 'price',
-			'value'             => $fees[ $loop ],
+			'value'             => isset( $fees[ $variation->ID ] ) ? $fees[ $variation->ID ] : '',
 			'custom_attributes' => array(
 				'step' => 'any',
 				'min'  => '0',
@@ -129,11 +129,26 @@ function gdcwc_woocommerce_checkout_subscription_created( $subscription, $order,
 
 	// TODO: figure out if multiple products have post trial fee.
 	foreach ( $items as $item ) {
-		$product_id     = $item->get_product_id();
-		$post_trial_fee = get_post_meta( $product_id, '_subscription_post_trial_fee', true );
-		if ( '' !== $post_trial_fee ) {
-			// add to subscription
-			update_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', $post_trial_fee );
+		$product_id = $item->get_product_id();
+		$product    = wc_get_product( $product_id );
+
+		if ( 'subscription' === $product->get_type() ) {
+			// Simple Subscriptions
+			$post_trial_fee = get_post_meta( $product->get_id(), '_subscription_post_trial_fee', true );
+			if ( '' !== $post_trial_fee ) {
+				// add to subscription
+				update_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', $post_trial_fee );
+			}
+		} elseif ( 'variable-subscription' === $product->get_type() ) {
+			// Variable Subscripion
+			$variable_post_trial_fee = get_post_meta( $product_id, '_variable_subscription_post_trial_fee', true );
+			if ( is_array( $variable_post_trial_fee ) ) {
+				// get variation_id from order
+				if ( isset( $variable_post_trial_fee[ $item->get_variation_id() ] ) ) {
+					// add to subscription
+					update_post_meta( $subscription->get_id(), '_subscription_post_trial_fee', $variable_post_trial_fee[ $item->get_variation_id() ] );
+				}
+			}
 		}
 	}
 }
