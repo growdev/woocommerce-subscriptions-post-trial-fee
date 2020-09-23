@@ -218,12 +218,14 @@ function gdcwc_woocommerce_subscriptions_product_price_string( $subscription_str
 	if ( '' !== $post_trial_fee ) {
 		$subscription_string .= sprintf( ' and %s post trial fee', wc_price( $post_trial_fee ) );
 	} else {
-		$variable_post_trial_fee = get_post_meta( $product->get_id(), '_variable_subscription_post_trial_fee', true );
-		if ( is_array( $variable_post_trial_fee ) ) {
-			$subscription_string .= 'VARIABLE';
+		// this is a variation of a variable subscription
+		$variable_post_trial_fee = get_post_meta( $product->get_parent_id(), '_variable_subscription_post_trial_fee', true );
+		if ( is_array( $variable_post_trial_fee ) && ! empty( $variable_post_trial_fee ) ) {
+			if ( isset( $variable_post_trial_fee[ $product->get_id() ] ) ) {
+				$subscription_string .= sprintf( ' and %s post trial fee', wc_price( $variable_post_trial_fee[ $product->get_id() ] ) );
+			}
 		}
 	}
-
 
 	return $subscription_string;
 }
