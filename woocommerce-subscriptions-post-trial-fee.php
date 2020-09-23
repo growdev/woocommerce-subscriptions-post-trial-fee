@@ -30,6 +30,9 @@ function gdcwc_init() {
 
 	// Hook into renewal order creation and maybe add fee
 	add_action( 'wcs_new_order_created', 'gdcwc_maybe_add_fee', 10, 3 );
+
+	// Hook into price string and maybe add post trial fee
+	add_filter( 'woocommerce_subscriptions_product_price_string', 'gdcwc_woocommerce_subscriptions_product_price_string', 10, 3 );
 }
 
 /**
@@ -197,4 +200,32 @@ function gdcwc_maybe_add_fee( $new_order, $subscription, $type ) {
 		}
 	}
 	return $new_order;
+}
+
+/**
+ * Maybe add post trial fee to subscription product price string.
+ *
+ * @param $subscription_string
+ * @param $product
+ * @param $include
+ *
+ * @return string
+ */
+function gdcwc_woocommerce_subscriptions_product_price_string( $subscription_string, $product, $include ) {
+
+	// check product for post_trial_fee
+	$post_trial_fee = get_post_meta( $product->get_id(), '_subscription_post_trial_fee', true );
+	if ( '' !== $post_trial_fee ) {
+		$subscription_string .= sprintf( ' and %s post trial fee', wc_price( $post_trial_fee ) );
+	} else {
+		// this is a variation of a variable subscription
+		$variable_post_trial_fee = get_post_meta( $product->get_parent_id(), '_variable_subscription_post_trial_fee', true );
+		if ( is_array( $variable_post_trial_fee ) && ! empty( $variable_post_trial_fee ) ) {
+			if ( isset( $variable_post_trial_fee[ $product->get_id() ] ) ) {
+				$subscription_string .= sprintf( ' and %s post trial fee', wc_price( $variable_post_trial_fee[ $product->get_id() ] ) );
+			}
+		}
+	}
+
+	return $subscription_string;
 }
